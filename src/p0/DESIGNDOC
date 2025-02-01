@@ -74,23 +74,55 @@ because 80x86 doesn't support jumping to locations stored in this format (potent
 
 ---- QUESTIONS: KERNEL ---- 
 >> B9: At the entry of pintos_init(), what is the value of expression 
-init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+(gdb) p init_page_dir[pd_no(ptov(0))]
+=> 0xc000efef:  int3   
+=> 0xc000efef:  int3   
+$1 = 0
+
+The value of the expression (presumeably the page directory entry for the virtual address that corresponds to 
+physical address 0x0, whose value is a pointer to the mapped physical page) is 0x0. 
 
 >> B10: When palloc_get_page() is called for the first time,
 
 >> B10.1 what does the call stack look like?
+(gdb) bt
+#0  palloc_get_page (flags=(PAL_ASSERT | PAL_ZERO)) at ../../threads/palloc.c:113
+#1  0xc00203aa in paging_init () at ../../threads/init.c:168
+#2  0xc002031b in pintos_init () at ../../threads/init.c:100
+#3  0xc002013d in start () at ../../threads/start.S:180
 
 >> B10.2 what is the return value in hexadecimal format?
+(gdb) p pd
+$4 = (uint32_t *) 0xc0101000
+The return value is an unsigned integer pointer with the above value (hex address).
 
 >> B10.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+(gdb) p init_page_dir[pd_no(ptov(0))]
+=> 0xc000ef9f:  int3   
+=> 0xc000ef9f:  int3   
+$5 = 0
+The value (pointer to mapped physical page) is still 0x0.
 
 >> B11: When palloc_get_page() is called for the third time,
 
 >> B11.1 what does the call stack look like?
+(gdb) bt
+#0  palloc_get_page (flags=PAL_ZERO) at ../../threads/palloc.c:113
+#1  0xc0020a81 in thread_create (name=0xc002e895 "idle", priority=0, function=0xc0020eb0 <idle>, aux=0xc000efbc)
+    at ../../threads/thread.c:178
+#2  0xc0020976 in thread_start () at ../../threads/thread.c:111
+#3  0xc0020334 in pintos_init () at ../../threads/init.c:119
+#4  0xc002013d in start () at ../../threads/start.S:180
 
 >> B11.2 what is the return value in hexadecimal format?
+(gdb) p t
+$9 = (struct thread *) 0xc0103000
 
 >> B11.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+(gdb) p/x init_page_dir[pd_no(ptov(0))]
+=> 0xc000ef5f:  int3   
+=> 0xc000ef5f:  int3   
+$11 = 0x102027
 
 			     Kernel Monitor
 			     ==============

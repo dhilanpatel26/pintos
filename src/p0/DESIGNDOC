@@ -31,22 +31,46 @@ Dhilan Patel dpatel93@jhu.edu
 
 ---- QUESTIONS: BIOS ---- 
 >> B1: What is the first instruction that gets executed?
+[f000:fff0]    0xffff0: ljmp   $0x3630,$0xf000e05b
 
 >> B2: At which physical address is this instruction located?
+0xffff0
 
 >> B3: Can you guess why the first instruction is like this?
+This first instruction is likely hard-wired to the BIOS ROM, and is responsible
+for passing control to the boot loader. The BIOS has just loaded the 512-byte 
+boot sector into physical memory starting at f000:fff0, and must jump the 
+instruction pointer to allow the boot loader to begin executing its code.
+
+Why ljmp? What are we comparing here?
 
 >> B4: What are the next three instructions?
+[f000:e05b]    0xfe05b: cmpw   $0x28,%cs:(%esi)
+[f000:e062]    0xfe062: jne    0xd241d0ad
+[f000:e066]    0xfe066: xor    %edx,%edx
 
 ---- QUESTIONS: BOOTLOADER ---- 
 >> B5: How does the bootloader read disk sectors? In particular, what BIOS interrupt
 is used?
+The bootloader reads disk sectors one at a time, checking each time if it needs to proceed 
+to the next drive or partition and iterating through partition table entries by incrementing 
+%rsi. The bootloader will skip over drives that do not have an MBR signature, and partitions that 
+are either unused or do not belong to the Pintos kernel. The BIOS system call interrupt "read_sector" 
+is used to read the disks.
 
 >> B6: How does the bootloader decides whether it successfully finds the Pintos kernel?
+The bootloader decides it successfully finds the Pintos kernel when it reaches drive 0x80, 
+as indicated by %es:(%si). It then jumps to a function that loads the kernel.
 
 >> B7: What happens when the bootloader could not find the Pintos kernel?
+If the bootloader could not find the Pintos kernel, it prints "Not found" and notifies the 
+BIOS that the boot failed via instruction "int $0x18".
 
 >> B8: At what point and how exactly does the bootloader transfer control to the Pintos kernel?
+The bootloader transfers control to the Pintos kernel after it successfully reads all kernel sectors. 
+It reads the start address of the kernel from its ELF header and stores it in memory in segment:offset 
+format. It then jumps to the stored address after dereferencing the pointer to memory, which is necessary 
+because 80x86 doesn't support jumping to locations stored in this format (potentially across multiple registers).
 
 ---- QUESTIONS: KERNEL ---- 
 >> B9: At the entry of pintos_init(), what is the value of expression 

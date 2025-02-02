@@ -15,6 +15,7 @@
 #include "devices/timer.h"
 #include "devices/vga.h"
 #include "devices/rtc.h"
+#include "devices/intq.h"
 #include "threads/interrupt.h"
 #include "threads/io.h"
 #include "threads/loader.h"
@@ -133,12 +134,42 @@ pintos_init (void)
     /* Run actions specified on kernel command line. */
     run_actions (argv);
   } else {
-    // TODO: no command line passed to kernel. Run interactively 
+    // TODO: no command line passed to kernel. Run interactively
+    // TODO: refactor into neater functions, readline source file
+    char input_buf[INTQ_BUFSIZE];
+    size_t w = 0; // write pointer
+    char exit_str[] = "exit";
+    char whoami_str[] = "whoami";
+    input_init(); // should always remain empty
+    while (strcmp(input_buf, exit_str) != 0) {
+      printf("CS318>"); // printf vs puts?
+      // TODO: Turn interrupts off
+      intr_disable();
+      while (!input_full()) {
+        char key = (char) input_getc();
+        if (key == '\r') {
+          printf("\n");
+          input_buf[w] = '\0'; // null-terminator
+          w = 0; // no need to actually clear input_buf
+          if (strcmp(input_buf, whoami_str) == 0) {
+            printf("<placeholder for user>\n");
+          } else if (strcmp(input_buf, exit_str) != 0) {
+            printf("invalid command\n");
+          }
+          break;
+        } else {
+          input_buf[w++] = key;
+          putchar(key);
+        }
+      }
+      intr_enable();
+    } 
+    printf("Done!\n");
   }
 
   /* Finish up. */
   shutdown ();
-  thread_exit ();
+  thread_exit (); // never returns to the caller (designed to hang)
 }
 
 /* Clear the "BSS", a segment that should be initialized to

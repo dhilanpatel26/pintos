@@ -152,7 +152,8 @@ pintos_init (void)
           input_buf[w] = '\0'; // null-terminator
           w = 0; // no need to actually clear input_buf
           if (strcmp(input_buf, whoami_str) == 0) {
-            printf("<placeholder for user>\n");
+            // TODO: is this supposed to be dynamic or hard-coded?
+            printf("Dhilan Patel\n");
           } else if (strcmp(input_buf, exit_str) != 0) {
             printf("invalid command\n");
           }

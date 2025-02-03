@@ -134,29 +134,19 @@ pintos_init (void)
     /* Run actions specified on kernel command line. */
     run_actions (argv);
   } else {
-    // TODO: no command line passed to kernel. Run interactively
-    // TODO: refactor into neater functions, readline source file
+    // no command line passed to kernel. Run interactively
     char input_buf[INTQ_BUFSIZE];
-    size_t w = 0; // write pointer
-    char exit_str[] = "exit";
-    char whoami_str[] = "whoami";
-    input_init(); // should always remain empty
-    while (strcmp(input_buf, exit_str) != 0) {
-      printf("CS318>"); // printf vs puts?
-      // TODO: Turn interrupts off
-      intr_disable();
-      while (!input_full()) {
+    size_t w = 0; // write index
+    input_init();
+    while (strcmp(input_buf, "exit") != 0) { // line loop
+      printf("CS318>");
+      intr_disable(); // interrupts must be off to read from input buffer
+      while (!input_full()) { // character loop
         char key = (char) input_getc();
-        if (key == '\r') {
-          printf("\n");
+        if (key == '\r') { // enter key
+          putchar('\n');
           input_buf[w] = '\0'; // null-terminator
-          w = 0; // no need to actually clear input_buf
-          if (strcmp(input_buf, whoami_str) == 0) {
-            // TODO: is this supposed to be dynamic or hard-coded?
-            printf("Dhilan Patel\n");
-          } else if (strcmp(input_buf, exit_str) != 0) {
-            printf("invalid command\n");
-          }
+          w = 0; // reset write index
           break;
         } else {
           input_buf[w++] = key;
@@ -164,8 +154,13 @@ pintos_init (void)
         }
       }
       intr_enable();
+      if (strcmp(input_buf, "whoami") == 0) {
+        printf("Dhilan Patel\n"); // hard-coded whoami
+      } else if (strcmp(input_buf, "exit") != 0) {
+        printf("invalid command\n");
+      }
     } 
-    printf("Done!\n");
+    printf("Goodbye!\n");
   }
 
   /* Finish up. */

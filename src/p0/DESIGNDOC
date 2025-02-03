@@ -132,8 +132,13 @@ $11 = 0x102027
 >> C1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
+N/A
 
 ---- ALGORITHMS ----
 >> C2: Explain how you read and write to the console for the kernel monitor.
+The program uses input API function input_getc to read individual keystrokes from the hardware 
+device as they come in. Keypresses and string feedback are added to the kernel monitor via putchar 
+and printf, respectively, both of which are part of the console API.
 
 >> C3: Any additional enhancement you implement?
+N/A
